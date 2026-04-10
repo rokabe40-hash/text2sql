@@ -22,7 +22,7 @@ train/
 ## 运行方式
 ```bash
 python alexnet_cifar10_local.py \
-  --data-dir /home/runner/work/-/-/train \
+  --data-dir train \
   --epochs 10 \
   --batch-size 128 \
   --hidden-list 256 512 1024

@@ -167,18 +167,21 @@ def plot_results(results: Dict[int, Dict[str, List[float]]], output_path: Path) 
         plt.plot(history["train_loss"], label=f"h={hidden_units}")
     plt.title("Train Loss")
     plt.xlabel("Epoch")
+    plt.ylabel("Loss")
 
     plt.subplot(1, 3, 2)
     for hidden_units, history in results.items():
         plt.plot(history["train_acc"], label=f"h={hidden_units}")
     plt.title("Train Accuracy")
     plt.xlabel("Epoch")
+    plt.ylabel("Accuracy")
 
     plt.subplot(1, 3, 3)
     for hidden_units, history in results.items():
         plt.plot(history["test_acc"], label=f"h={hidden_units}")
     plt.title("Test Accuracy")
     plt.xlabel("Epoch")
+    plt.ylabel("Accuracy")
 
     plt.legend()
     plt.tight_layout()
