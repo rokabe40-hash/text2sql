@@ -17,7 +17,7 @@ except ModuleNotFoundError:
 
 
 class AlexNetCIFAR(nn.Module):
-    def __init__(self, hidden_units: int = 512, num_classes: int = 10):
+    def __init__(self, hidden_units: int = 512, num_classes: int = 10, dropout: float = 0.5):
         super().__init__()
         self.features = nn.Sequential(
             nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1),
@@ -39,10 +39,10 @@ class AlexNetCIFAR(nn.Module):
             nn.Flatten(),
             nn.Linear(256 * 4 * 4, hidden_units),
             nn.ReLU(),
-            nn.Dropout(0.5),
+            nn.Dropout(dropout),
             nn.Linear(hidden_units, hidden_units),
             nn.ReLU(),
-            nn.Dropout(0.5),
+            nn.Dropout(dropout),
             nn.Linear(hidden_units, num_classes),
         )
 
@@ -84,7 +84,10 @@ def load_data(
     train_size = total_size - test_size
 
     if train_size <= 0 or test_size <= 0:
-        raise ValueError("数据量不足，请检查 train 目录内容，并确保可按 80/20 划分。")
+        raise ValueError(
+            f"数据量不足：当前样本数={total_size}，按 val_ratio={val_ratio:.2f} 划分后 "
+            f"train_size={train_size}, test_size={test_size}。请增加样本或调整划分比例。"
+        )
 
     generator = torch.Generator().manual_seed(seed)
     train_set, test_set = random_split(dataset, [train_size, test_size], generator=generator)
@@ -101,10 +104,11 @@ def train(
     test_iter: DataLoader,
     num_epochs: int,
     lr: float,
+    momentum: float,
     device: torch.device,
 ) -> Dict[str, List[float]]:
     net.to(device)
-    optimizer = torch.optim.SGD(net.parameters(), lr=lr, momentum=0.9)
+    optimizer = torch.optim.SGD(net.parameters(), lr=lr, momentum=momentum)
     loss_fn = nn.CrossEntropyLoss()
 
     history = {
@@ -219,6 +223,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--batch-size", type=int, default=128)
     parser.add_argument("--epochs", type=int, default=10)
     parser.add_argument("--lr", type=float, default=0.01)
+    parser.add_argument("--momentum", type=float, default=0.9)
+    parser.add_argument("--dropout", type=float, default=0.5)
     parser.add_argument("--num-workers", type=int, default=2)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--val-ratio", type=float, default=0.2)
@@ -251,13 +257,18 @@ def main() -> None:
     results: Dict[int, Dict[str, List[float]]] = {}
     for hidden_units in args.hidden_list:
         print(f"\nTraining hidden_units={hidden_units}")
-        net = AlexNetCIFAR(hidden_units=hidden_units, num_classes=len(classes))
+        net = AlexNetCIFAR(
+            hidden_units=hidden_units,
+            num_classes=len(classes),
+            dropout=args.dropout,
+        )
         results[hidden_units] = train(
             net=net,
             train_iter=train_iter,
             test_iter=test_iter,
             num_epochs=args.epochs,
             lr=args.lr,
+            momentum=args.momentum,
             device=device,
         )
 
