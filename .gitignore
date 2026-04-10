@@ -1,2 +1,11 @@
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+.Python
+*$py.class
+.ipynb_checkpoints/
+outputs/
+train/
+*.pt
+*.pth

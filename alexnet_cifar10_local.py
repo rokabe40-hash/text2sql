@@ -73,19 +73,24 @@ def load_data(
     data_dir: Path,
     batch_size: int,
     num_workers: int,
-    val_ratio: float,
+    test_ratio: float,
     seed: int,
 ) -> Tuple[DataLoader, DataLoader, List[str]]:
-    transform = transforms.Compose([transforms.ToTensor()])
+    transform = transforms.Compose(
+        [
+            transforms.ToTensor(),
+            transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2470, 0.2435, 0.2616)),
+        ]
+    )
     dataset = datasets.ImageFolder(root=str(data_dir), transform=transform)
 
     total_size = len(dataset)
-    test_size = int(total_size * val_ratio)
+    test_size = int(total_size * test_ratio)
     train_size = total_size - test_size
 
     if train_size <= 0 or test_size <= 0:
         raise ValueError(
-            f"数据量不足：当前样本数={total_size}，按 val_ratio={val_ratio:.2f} 划分后 "
+            f"数据量不足：当前样本数={total_size}，按 test_ratio={test_ratio:.2f} 划分后 "
             f"train_size={train_size}, test_size={test_size}。请增加样本或调整划分比例。"
         )
 
@@ -227,7 +232,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--dropout", type=float, default=0.5)
     parser.add_argument("--num-workers", type=int, default=2)
     parser.add_argument("--seed", type=int, default=42)
-    parser.add_argument("--val-ratio", type=float, default=0.2)
+    parser.add_argument("--test-ratio", type=float, default=0.2)
     parser.add_argument("--hidden-list", type=int, nargs="+", default=[256, 512, 1024])
     parser.add_argument("--output-dir", type=str, default="outputs")
     return parser.parse_args()
@@ -245,7 +250,7 @@ def main() -> None:
         data_dir=data_dir,
         batch_size=args.batch_size,
         num_workers=args.num_workers,
-        val_ratio=args.val_ratio,
+        test_ratio=args.test_ratio,
         seed=args.seed,
     )
     print(f"类别数: {len(classes)}, 类别名: {classes}")
