@@ -83,7 +83,7 @@ def load_data(
     test_size = int(total_size * val_ratio)
     train_size = total_size - test_size
 
-    if total_size == 0 or train_size <= 0 or test_size <= 0:
+    if train_size <= 0 or test_size <= 0:
         raise ValueError("数据量不足，请检查 train 目录内容，并确保可按 80/20 划分。")
 
     generator = torch.Generator().manual_seed(seed)
@@ -168,6 +168,7 @@ def plot_results(results: Dict[int, Dict[str, List[float]]], output_path: Path) 
     plt.title("Train Loss")
     plt.xlabel("Epoch")
     plt.ylabel("Loss")
+    plt.legend()
 
     plt.subplot(1, 3, 2)
     for hidden_units, history in results.items():
@@ -175,6 +176,7 @@ def plot_results(results: Dict[int, Dict[str, List[float]]], output_path: Path) 
     plt.title("Train Accuracy")
     plt.xlabel("Epoch")
     plt.ylabel("Accuracy")
+    plt.legend()
 
     plt.subplot(1, 3, 3)
     for hidden_units, history in results.items():
@@ -182,7 +184,6 @@ def plot_results(results: Dict[int, Dict[str, List[float]]], output_path: Path) 
     plt.title("Test Accuracy")
     plt.xlabel("Epoch")
     plt.ylabel("Accuracy")
-
     plt.legend()
     plt.tight_layout()
     output_path.parent.mkdir(parents=True, exist_ok=True)
