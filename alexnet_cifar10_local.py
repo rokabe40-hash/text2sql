@@ -203,27 +203,29 @@ def plot_results(results: Dict[int, Dict[str, List[float]]], output_path: Path) 
 def summarize_results(results: Dict[int, Dict[str, List[float]]]) -> Dict[int, Dict[str, float]]:
     summary = {}
     print("\n=== 实验结果汇总 ===")
-    print("hidden_units | train_acc | test_acc | acc_gap(train-test) | avg_epoch_time(s)")
+    print("hidden_units | train_acc | test_acc | overfit_gap(train-test) | avg_epoch_time(s)")
     for hidden_units, history in results.items():
         final_train_acc = history["train_acc"][-1]
         final_test_acc = history["test_acc"][-1]
-        gap = final_train_acc - final_test_acc
+        overfit_gap = final_train_acc - final_test_acc
         avg_time = sum(history["epoch_time_sec"]) / len(history["epoch_time_sec"])
         summary[hidden_units] = {
             "final_train_acc": final_train_acc,
             "final_test_acc": final_test_acc,
-            "train_test_gap": gap,
+            "overfit_gap": overfit_gap,
             "avg_epoch_time_sec": avg_time,
         }
         print(
             f"{hidden_units:12d} | {final_train_acc:9.4f} | {final_test_acc:8.4f} | "
-            f"{gap:19.4f} | {avg_time:15.2f}"
+            f"{overfit_gap:23.4f} | {avg_time:15.2f}"
         )
     return summary
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="AlexNet on local CIFAR-style train folder (80/20 split)")
+    parser = argparse.ArgumentParser(
+        description="AlexNet on local CIFAR-style train folder with configurable train/test split"
+    )
     parser.add_argument("--data-dir", type=str, default="train", help="本地数据目录，按 ImageFolder 组织")
     parser.add_argument("--batch-size", type=int, default=128)
     parser.add_argument("--epochs", type=int, default=10)
