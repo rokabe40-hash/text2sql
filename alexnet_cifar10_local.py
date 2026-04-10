@@ -5,11 +5,15 @@ import time
 from pathlib import Path
 from typing import Dict, List, Tuple
 
-import matplotlib.pyplot as plt
 import torch
 from torch import nn
 from torch.utils.data import DataLoader, random_split
 from torchvision import datasets, transforms
+
+try:
+    import matplotlib.pyplot as plt
+except ModuleNotFoundError:
+    plt = None
 
 
 class AlexNetCIFAR(nn.Module):
@@ -152,6 +156,10 @@ def train(
 
 
 def plot_results(results: Dict[int, Dict[str, List[float]]], output_path: Path) -> None:
+    if plt is None:
+        print("未安装 matplotlib，跳过曲线绘制。")
+        return
+
     plt.figure(figsize=(14, 4))
 
     plt.subplot(1, 3, 1)
